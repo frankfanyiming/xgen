@@ -1,0 +1,107 @@
+/* 布局：宽屏左边一部手机、右边是后台控制室；窄屏用顶部切换在两者之间切。
+   色彩：喜帖胭脂色做强调（人物 Agent、玩家气泡），青灰做后台和裁判，纸面中性色略带胭脂偏色。 */
+:root {
+  /* 中性色 */
+  --bg: #f3eff0;
+  --surface: #ffffff;
+  --surface-2: #f8f4f5;
+  --ink: #1e1a1c;
+  --muted: #6f6669;
+  --line: #e2dadb;
+  /* 强调 */
+  --accent: #a3324a;          /* 胭脂：人物 Agent、主要按钮 */
+  --accent-ink: #ffffff;
+  --accent-soft: #f6dde2;     /* 玩家气泡、选中态 */
+  --teal: #2f5d62;            /* 裁判 Agent、后台高亮 */
+  --teal-soft: #dcebec;
+  --violet: #5d4f96;          /* 记忆 Agent */
+  --amber: #8a5d0c;           /* 编剧 Agent */
+  --code: #55606a;            /* 代码层：内核、导演 */
+  /* 语义色（不当强调色用） */
+  --ok: #2e7d4f;
+  --warn: #a8670f;
+  --bad: #b42318;
+  /* 人物头像色 */
+  --p1: #a3324a; --p2: #2f5d62; --p3: #8a5d0c; --p4: #5d4f96; --p5: #3d6b3f; --p6: #6a4a3a;
+  /* 手机 */
+  --phone-bg: #ece6e7;
+  --phone-frame: #26201f;
+  --bubble-in: #ffffff;
+  --bubble-me: #f6dde2;
+  --scrim: rgba(30, 26, 28, 0.55);
+  /* 字体 */
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --font-body: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  /* 字号 */
+  --fs-xs: 0.75rem; --fs-sm: 0.8125rem; --fs-md: 0.9375rem; --fs-lg: 1.125rem; --fs-xl: 1.5rem; --fs-2xl: 2rem;
+  /* 圆角与阴影：按角色用，不是每块都加 */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 18px; --r-phone: 38px;
+  --shadow-phone: 0 18px 50px rgba(30, 26, 28, 0.18);
+  --shadow-pop: 0 8px 24px rgba(30, 26, 28, 0.16);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141113; --surface: #1e1a1c; --surface-2: #252022; --ink: #efe9ea; --muted: #a39a9c; --line: #352d30;
+    --accent: #e07a8f; --accent-ink: #1e1a1c; --accent-soft: #4a2430; --teal: #7fb3b8; --teal-soft: #1f3335;
+    --violet: #a99be0; --amber: #e0b25c; --code: #9aa6b1; --ok: #6cc28f; --warn: #e3a64a; --bad: #f08a7e;
+    --p1: #e07a8f; --p2: #7fb3b8; --p3: #e0b25c; --p4: #a99be0; --p5: #8fc28f; --p6: #c79a83;
+    --phone-bg: #0f0d0e; --phone-frame: #000000; --bubble-in: #252022; --bubble-me: #4a2430; --scrim: rgba(0, 0, 0, 0.6);
+    --shadow-phone: 0 18px 50px rgba(0, 0, 0, 0.5); --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141113; --surface: #1e1a1c; --surface-2: #252022; --ink: #efe9ea; --muted: #a39a9c; --line: #352d30;
+  --accent: #e07a8f; --accent-ink: #1e1a1c; --accent-soft: #4a2430; --teal: #7fb3b8; --teal-soft: #1f3335;
+  --violet: #a99be0; --amber: #e0b25c; --code: #9aa6b1; --ok: #6cc28f; --warn: #e3a64a; --bad: #f08a7e;
+  --p1: #e07a8f; --p2: #7fb3b8; --p3: #e0b25c; --p4: #a99be0; --p5: #8fc28f; --p6: #c79a83;
+  --phone-bg: #0f0d0e; --phone-frame: #000000; --bubble-in: #252022; --bubble-me: #4a2430; --scrim: rgba(0, 0, 0, 0.6);
+  --shadow-phone: 0 18px 50px rgba(0, 0, 0, 0.5); --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-md);
+  line-height: 1.55;
+}
+* { box-sizing: border-box; }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* 外壳 */
+.shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  gap: 12px;
+}
+.shell-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.shell-title { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 700; letter-spacing: 0.02em; margin: 0; }
+.shell-sub { color: var(--muted); font-size: var(--fs-sm); }
+.shell-switch { margin-left: auto; display: none; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--surface); }
+.shell-switch button { border: 0; background: transparent; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
+.shell-switch button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.stage { flex: 1; min-height: 0; display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 20px; }
+.stage > section { min-height: 0; min-width: 0; }
+#phone-root { display: flex; justify-content: center; align-items: stretch; }
+#admin-root { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; display: flex; flex-direction: column; }
+
+@media (max-width: 1080px) {
+  .shell-switch { display: inline-flex; }
+  .stage { grid-template-columns: minmax(0, 1fr); }
+  .stage[data-view="phone"] #admin-root { display: none; }
+  .stage[data-view="admin"] #phone-root { display: none; }
+}
+@media (max-width: 520px) {
+  .shell { padding-block: 8px; gap: 8px; }
+  .shell-sub { display: none; }
+}
