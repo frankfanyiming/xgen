@@ -305,6 +305,13 @@ app = {
   - 事件进度：按天列节点：未到 / 进行中（待回答）/ 已结算（结果 label）/ 没发生。
 - **世界设定**：人物（每人一张可编辑卡：voice、habits、sampleLines、motive、goal、rules、never、fallbackLines；supporting 只读）+「AI 补全人物」（输入一句简介 → `app.writer` → 预览卡 → 加入草稿）；事件（按线分组只读：窗口、触发条件的人话摘要、意图、结果）；导演规则（D1–D6 文本 + 可改数字：主动消息上限、安静时段、每天危机上限、危机间隔）；内容边界（promptBlock 可改、硬线列表、越界输入列表、词表）。底部「保存草稿」（显示存到了哪里）、「用草稿重开一局」（页面内二次确认）。
 - **成本**：按 Agent 类型的调用数、token、¥（价格表可切 mini/flash）；按故事日的表；"这一局到现在"总价和"折算每活跃用户每天"（= 本局总价 ÷ 已玩故事天数，至少按 1 天算）；对照我们之前的成本模型（旧架构重度 ¥1.07/天 → 新架构 ¥0.27/天）。注明：本原型实际跑在 Claude 上（看的人自己的额度），金额是按线上模型价格折算的估计。
+【更新】（D）实现补充：
+- `mountAdmin` 返回 `{ show(tab, sub?), refresh(), destroy() }`。**E：`app.view.show('admin', tab)` 里调用这个 `show(tab)`**（或者改 `location.hash`，后台监听 `hashchange`）。锚点也认子标签：`#runtime/calls|director|state|events`、`#world/cast|events|director|policy`；点标签时后台用 `history.replaceState` 改锚点，不触发滚动。`opts.tab` / `opts.sub` 是没有锚点时的初始标签。
+- 只 import `./world.js`（原始世界包：草稿对照“已改几处”、「还原这张卡」用）；其余全从 `app` 读。订阅 `app.on('change')` 和 `app.on('calls')`，120ms 合并重绘；调用列表只在顶上插新行，已展开的 prompt 不会被重绘冲掉。
+- 隐私检查标记写人物短名而不是“她”：“只含知夏知道的 2 条事实 ✓” / “含苏蔓不知道的事实 ✗”（陈骁、配角是男性）。展开后逐条列出 prompt 里出现的事实、她现在怎么知道的。
+- 草稿 patch 只写改过的字段：`cast[key]` 用嵌套的 `persona:{voice,habits,sampleLines}`、`motive:{surface,deep}` 加平铺的 `goal/rules/never/fallbackLines`（列表按行拆、去空行）；`director` 只含改过的键（`quietHours` 是 `['HH:MM','HH:MM']`）；`policy.promptBlock` 改了才有；`extraCast` 是编剧卡的完整列表。「用草稿重开一局」= 页面内确认 → `draft.save(patch)` → `draft.applyAndRestart(patch)`（E 不必再存一次）。
+- 成本页带两个设置开关：价格表（`setSetting('price', 'mini'|'flash')`）和模型档位（`setSetting('tier', 'quick'|'default')`）；后台切完自己重绘，不依赖 E 发 'change'。“已玩故事天数” = 显示时间所在故事日 − 开场那天 + 1。另给一行“按每天 60 条消息折算”（本局总价 ÷ 玩家消息数 × 60），和旧成本模型的重度用户口径对齐；flash 价下旧模型对照是 ¥0.81 → ¥0.16。
+- 顶栏右侧显示 `agentStatus()`（已连接 / 离线兜底 / 检测中）、本局调用次数和按当前价格表的总价。
 
 ## 13. 文案与设计
 

@@ -170,8 +170,11 @@ export function mountAdmin(el, app, opts = {}) {
   const shortAt = (min) => { if (min == null) return '后台'; const x = dateOf(dayOf(min)); return `${x.m}/${x.d} ${clockOf(min)}`; };
   const fullAt = (min) => `${dayLabel(dayOf(min))} ${clockOf(min)}`;
   const dtLabel = (t) => { const m = toMin(t); const x = dateOf(dayOf(m)); return `${x.m}月${x.d}日 ${clockOf(m)}`; };
+  // 有 app.kernel（C 约定挂上的 kernel 模块）就用它，口径和手机一致；没有就用本地同义实现
+  const K = () => (app.kernel && typeof app.kernel === 'object' ? app.kernel : null);
   function displayTime(s) {
     if (!s) return 0;
+    if (K()?.displayTime) { try { return K().displayTime(s); } catch { /* 用本地版 */ } }
     let t = s.now || 0;
     for (const id in s.threads || {}) { const th = s.threads[id]; if (th?.msgs?.length && th.lastAt > t) t = th.lastAt; }
     return t;
@@ -193,6 +196,7 @@ export function mountAdmin(el, app, opts = {}) {
 
   function nodeStatus(s, n) {
     if (!s) return 'waiting';
+    if (K()?.nodeStatus) { try { const v = K().nodeStatus(pkg(), s, n.key); if (STATUS[v]) return v; } catch { /* 用本地版 */ } }
     if ((s.open || []).some((d) => d.node === n.key)) return 'open';
     if (s.ran?.[n.key]) return 'done';
     if (s.ended || s.now > toMin(n.trigger?.window?.[1])) return 'missed';
@@ -649,7 +653,7 @@ export function mountAdmin(el, app, opts = {}) {
     if (c.agent === 'memory') {
       const o = parseJSON(c.output);
       const cards = o && typeof o === 'object' ? o.cards || o : null;
-      sec.push(`<div class="ad-dsec"><h5>第 ${esc(c.day ?? '?')} 天的记忆卡</h5>${cards && Object.keys(cards).length ? `<ul class="ad-memlist">${Object.entries(cards).map(([k, v]) => `<li>${dot(k)}<b>${esc(shortName(k))}</b><span>${esc(v)}</span></li>`).join('')}</ul>` : '<p class="ad-muted">没有新卡，保留旧卡。</p>'}
+      sec.push(`<div class="ad-dsec"><h5>${c.day == null ? '记忆卡' : `${esc(dayLabel(Number(c.day)))} 这一天整理的记忆卡`}</h5>${cards && Object.keys(cards).length ? `<ul class="ad-memlist">${Object.entries(cards).map(([k, v]) => `<li>${dot(k)}<b>${esc(shortName(k))}</b><span>${esc(v)}</span></li>`).join('')}</ul>` : '<p class="ad-muted">没有新卡，保留旧卡。</p>'}
         ${c.dropped?.length ? `<p class="ad-warnline">命中词表、没有采用：${c.dropped.map((k) => esc(shortName(k))).join('、')}</p>` : ''}</div>`);
     }
     // 元信息
@@ -735,7 +739,7 @@ export function mountAdmin(el, app, opts = {}) {
     }).join('')}</tr>`).join('');
     const mem = (p.cast || []).map((c) => {
       const m = s.memory?.[c.key];
-      return `<li>${dot(c.key)}<div><b>${esc(shortName(c.key))}</b>${m ? `<span class="ad-muted">第 ${esc(m.day)} 天（${esc(dayLabel(Number(m.day) || 0))}）写的</span><p>${esc(m.card)}</p>` : '<p class="ad-muted">还没有记忆卡。每过一个故事日，和她有互动才会写。</p>'}</div></li>`;
+      return `<li>${dot(c.key)}<div><b>${esc(shortName(c.key))}</b>${m ? `<span class="ad-muted">记到 ${esc(dayLabel(Number(m.day) || 0))} 为止</span><p>${esc(m.card)}</p>` : '<p class="ad-muted">还没有记忆卡。每过一个故事日，和她有互动才会写。</p>'}</div></li>`;
     }).join('');
     const pend = (s.pending || []).slice().sort((a, b) => a.at - b.at);
     const bl = (s.boundaryLog || []).slice().reverse();
